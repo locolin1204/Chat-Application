@@ -1,0 +1,119 @@
+@use "../../_variables" as v;
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.chat-list {
+  width: 40%;
+  background: v.$primary-color;
+  margin: 1rem 0 1rem 1rem;
+}
+
+.messages-container {
+  width: 60%;
+  background: white;
+  background: v.$secondary-color;
+  margin: 1rem 1rem 1rem 0;
+  padding: 2rem;
+}
+
+.search-input {
+  margin: 1em;
+}
+
+.chat-title {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.chat-name {
+  font-weight: 500;
+}
+
+.chat-date {
+  font-size: 0.7rem;
+}
+
+.chat-last-message {
+  margin: 0;
+}
+
+.messages-header {
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: center;
+  gap: 1rem;
+
+  > img {
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.selected-chat-title {
+  font-weight: 500;
+  font-size: 1.2rem;
+}
+
+.chat-area {
+  height: calc(100vh - 14.5rem);
+  background: white;
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: auto;
+
+  > :first-child {
+    margin-top: auto;
+    margin-bottom: 0.2rem;
+  }
+
+}
+
+.chat-bubble-container {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+
+  &.sender {
+    justify-content: flex-end;
+
+    > .chat-bubble {
+      background: #ecf6ff;
+    }
+  }
+}
+
+.chat-bubble {
+  background: #f5f5f5;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.5rem;
+  width: fit-content;
+  margin: 0.2rem 1rem;
+}
+
+.chat-time {
+  font-size: 0.7rem;
+  margin-left: 0.4rem;
+  color: gray;
+}
+
+.no-message-header {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.input-area {
+  padding: 1rem 0;
+  > mat-form-field {
+    width: 100%;
+    outline: none;
+  }
+}
