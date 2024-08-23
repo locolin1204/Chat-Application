@@ -6,6 +6,8 @@ import { User } from "@app/model/User";
 import { ChatService } from "@app/service/chat.service";
 import { MessageService } from "@app/service/message.service";
 import { Message } from "@app/model/Message";
+import { ChatItem } from "@app/model/ChatItem";
+import { Chat } from "@app/model/Chat";
 
 @Component({
     selector: 'app-home',
@@ -91,6 +93,29 @@ export class HomeComponent {
                 next: connection => connection.subscribe({
                     next: message => {
                         this.messages.push(message as Message)
+                        this.chatItemList$ = this.chatItemList$.pipe(
+                            map(chatItemList => {
+                                    return chatItemList.map(chatItem => {
+                                        if (chatItem.chat._id === this.chatListControl.value[0]) {
+                                            const chat: Chat = {
+                                                _id: chatItem.chat._id,
+                                                lastMessage: message.text,
+                                                lastMessageDate: new Date(Date.now()),
+                                                userIds: chatItem.chat.userIds
+                                            }
+
+                                            return <ChatItem>({
+                                                senderId: chatItem.senderId,
+                                                chat: chat,
+                                                chatName: chatItem.chatName,
+                                            })
+                                        }
+                                        return chatItem
+                                    })
+                                }
+                            )
+                        )
+
                         console.log("message received ", message)
                         this.scrollToBottom()
                     },

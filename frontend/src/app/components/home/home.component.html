@@ -20,16 +20,10 @@
                     <mat-list-option *ngFor="let chatItem of chatItemList$ | async" [value]="chatItem.chat._id">
                         <img matListItemAvatar [ngSrc]="'assets/img/user-icon.png'" alt="" width="50" height="50">
                         <p mat-line class="chat-title">
-              <span class="chat-name">
-                {{ chatItem.chatName }}
-              </span>
-                            <span class="chat-date">
-                {{ chatItem.chat.lastMessageDate | date:'MMM dd hh:mm a' }}
-              </span>
+                            <span class="chat-name">{{ chatItem.chatName }}</span>
+                            <span class="chat-date">{{ chatItem.chat.lastMessageDate | date:'MMM dd hh:mm a' }}</span>
                         </p>
-                        <p mat-line class="chat-last-message">
-                            {{ chatItem.chat.lastMessage }}
-                        </p>
+                        <p mat-line class="chat-last-message">{{ chatItem.chat.lastMessage }}</p>
                         <mat-divider></mat-divider>
                     </mat-list-option>
                 </mat-selection-list>
