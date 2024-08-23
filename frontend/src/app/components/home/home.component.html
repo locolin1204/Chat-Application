@@ -1,8 +1,18 @@
 <div class="container">
-    <div class="chat-list">
+    <div class="select-user">
+        <mat-form-field>
+            <mat-label>Select User</mat-label>
+            <mat-select [(ngModel)]="selectedUser">
+                <mat-option *ngFor="let user of availableUser$ | async" [value]="user" (click)="selectChatUser(user)">{{ user.username }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <ng-container *ngIf="selectedUser; else noUserSelected">
+    <div class="chat-list" *ngIf="selectedUser">
         <div>
             <div class="search-input">
-                <mat-form-field class="custom-mat-input">
+                <mat-form-field>
                     <input matInput
                            placeholder="Search for users..."
                            [formControl]="searchControl"
@@ -75,4 +85,10 @@
         </ng-template>
     </div>
 
+    </ng-container>
+    <ng-template #noUserSelected>
+        <div class="no-user-selected">
+            Select a User
+        </div>
+    </ng-template>
 </div>

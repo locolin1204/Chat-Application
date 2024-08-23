@@ -31,12 +31,15 @@ export class HomeComponent {
     hasMore = true;
     messages: Message[] = []
     messageBatchSize = 40;
+    selectedUser?: User;
 
     searchControl = new FormControl('')
     chatListControl = new FormControl()
     messageControl = new FormControl()
 
-    user$ = this.userService.getCurrentUser()
+    availableUser$ = this.userService.getAllUsers()
+
+    user$ = this.userService.getCurrentUser(this.selectedUser?._id)
     users$ = combineLatest(
         [this.userService.getAllUsers(), this.user$, this.searchControl.valueChanges.pipe(startWith(''))])
         .pipe(
@@ -50,7 +53,7 @@ export class HomeComponent {
         switchMap(value =>
             this.chatItemList$.pipe(
                 map(chatItems => {
-                    const chatItem = chatItems.find(chatItem => chatItem.chat._id === (value?.[0] ?? ""));
+                    const chatItem = chatItems.find(chatItem => chatItem.chat._id === (value?.[0] ?? "")) || null;
                     this.hasMore = true;
                     this.messages = []
                     this.connectAndSubscribeSocket()
@@ -60,6 +63,20 @@ export class HomeComponent {
             )
         )
     );
+
+    selectChatUser(curUser: User) {
+        this.user$ = this.userService.getCurrentUser(curUser._id)
+        this.chatItemList$ = this.chatService.getAllChats()
+        this.users$ = combineLatest(
+            [this.userService.getAllUsers(), this.user$, this.searchControl.valueChanges.pipe(startWith(''))])
+            .pipe(
+                map(([users, user, searchString]) => users.filter(
+                    u => {
+                        return u.username?.toLowerCase().includes(searchString ?? "".toLowerCase()) && u._id !== user?._id;
+                    }))
+            )
+        this.messages = []
+    }
 
     createChat(receiver: User) {
         this.chatService.isExistingChat(receiver._id).pipe(

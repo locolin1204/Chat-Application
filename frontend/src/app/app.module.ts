@@ -19,6 +19,7 @@ import { MatIcon } from "@angular/material/icon";
 import { IntersectionObserverDirective } from './directive/intersectionObserver.directive';
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatSelectModule } from "@angular/material/select";
 
 
 @NgModule({
@@ -47,6 +48,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     MatIcon,
     ScrollingModule,
     MatProgressSpinnerModule,
+    MatSelectModule
   ],
   providers: [
     provideAnimationsAsync(),

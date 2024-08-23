@@ -14,13 +14,17 @@ export class UsersService {
   ) { }
 
   private backendUrl = environment.backendUrl;
+  private curUserId = environment.curUserId
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   }
 
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.backendUrl}/user/${environment.curUserId}`)
+  getCurrentUser(userId?: string): Observable<User> {
+    if(userId) this.curUserId = userId
+    console.log("cur userId: ", this.curUserId)
+
+    return this.http.get<User>(`${this.backendUrl}/user/${this.curUserId}`)
       .pipe(
         tap(user => console.log(`fetched current user: ${user._id}`)),
       )
