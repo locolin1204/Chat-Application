@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from "@angular/forms";
 import { UsersService } from "@app/service/users.service";
-import { combineLatest, connect, map, mergeMap, Observable, of, startWith, switchMap, tap } from "rxjs";
+import { combineLatest, map, mergeMap, of, startWith, switchMap, tap } from "rxjs";
 import { User } from "@app/model/User";
 import { ChatService } from "@app/service/chat.service";
 import { MessageService } from "@app/service/message.service";
@@ -10,18 +10,25 @@ import { Message } from "@app/model/Message";
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
-    styleUrl: './home.component.scss'
+    styleUrl: './home.component.scss',
 })
 export class HomeComponent {
     constructor(
         private userService: UsersService,
         private chatService: ChatService,
         private messageService: MessageService
-    ) {
-    }
+    ) { }
 
     @ViewChild('endOfChat')
-    endOfChat: ElementRef | undefined;
+    endOfChat?: ElementRef;
+    @ViewChild('chatScroll', { static: false })
+    chatScroll?: ElementRef;
+
+    isLoading = false;
+    isInitialLoad = true;
+    hasMore = true;
+    messages: Message[] = []
+    messageBatchSize = 40;
 
     searchControl = new FormControl('')
     chatListControl = new FormControl()
@@ -42,15 +49,15 @@ export class HomeComponent {
             this.chatItemList$.pipe(
                 map(chatItems => {
                     const chatItem = chatItems.find(chatItem => chatItem.chat._id === (value?.[0] ?? ""));
+                    this.hasMore = true;
+                    this.messages = []
                     this.connectAndSubscribeSocket()
-                    this.fetchInitMessages()
+                    this.fetchMessage(true)
                     return chatItem
                 })
             )
         )
     );
-
-    messages: Message[] = []
 
     createChat(receiver: User) {
         this.chatService.isExistingChat(receiver._id).pipe(
@@ -70,7 +77,7 @@ export class HomeComponent {
                 )
             })
         ).subscribe(chatId => {
-            console.log("2: this is chatID", chatId);
+            console.log("This is chatID: ", chatId);
             this.chatListControl.setValue([chatId]);
         })
     }
@@ -109,20 +116,51 @@ export class HomeComponent {
     }
 
 
-    fetchInitMessages() {
-        this.messageService.getMessages(this.chatListControl.value[0], 10).subscribe(messages => {
-                this.messages = messages
+    fetchMessage(initialLoad: boolean) {
+        const lastMessageId = this.messages[0] ? this.messages[0]._id : null
+        this.isInitialLoad = initialLoad
+
+        this.isLoading = true;
+        console.log("Fetching new message: Loading...")
+
+        this.messageService.getMessages(this.chatListControl.value[0], this.messageBatchSize, lastMessageId).subscribe(messages => {
+                if (messages.length === 0) { this.hasMore = false }
+
+                this.messages = initialLoad ? messages : [...messages, ...this.messages]
+
+                this.isLoading = false;
+                console.log(this.messages)
+                console.log("Fetched new message: Completed")
+
+                // Scroll to bottom first time
+                if (initialLoad) {
+                    setTimeout(() => {
+                        if (this.chatScroll) {
+                            this.chatScroll.nativeElement.scrollTop = this.chatScroll.nativeElement.scrollHeight;
+                        }
+                        this.isInitialLoad = false
+                    }, 1);
+                }
+
             }
         )
     }
 
-    fetchMoreMessages() {
-        this.messageService.getMessages(this.chatListControl.value[0], 10, this.messages[0]._id).subscribe(messages => {
-                this.messages = messages.concat(this.messages)
-            }
-        )
-    }
 
+    onScrollFetchMessage($event: any) {
+        if (!this.hasMore) { return; }
+
+        const elem: HTMLElement = $event.srcElement;
+
+        if (elem.scrollTop < 1) { elem.scrollTo(0, 1); }
+
+        if (this.isLoading) { return; }
+
+        if (elem.scrollTop < 50) {
+            console.log("finally", elem.scrollTop)
+            this.fetchMessage(false)
+        }
+    }
 
     scrollToBottom() {
         setTimeout(() => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, switchMap } from "rxjs";
+import { delay, Observable, of, switchMap } from "rxjs";
 import { Message } from "@app/model/Message";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environments/environment.development";
@@ -51,13 +51,19 @@ export class MessageService {
     getMessages(
         chatId: string,
         size: number = 10,
-        lastMessageId?: string
+        lastMessageId: string | null
     ): Observable<Message[]> {
         const requestUrl = new URL(`/messages/${chatId}`, this.backendUrl)
 
         requestUrl.searchParams.set("size", size.toString())
         if (lastMessageId) requestUrl.searchParams.set("lastMessageId", lastMessageId)
 
-        return this.http.get<Message[]>(requestUrl.toString())
+        return of(null).pipe(
+            // imitate loading screen
+            delay(500),
+            switchMap(() => {
+                return this.http.get<Message[]>(requestUrl.toString())
+            })
+        )
     }
 }

@@ -62,14 +62,12 @@
   height: calc(100vh - 14.5rem);
   background: white;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   overflow: auto;
 
-  > :first-child {
+  > :first-child, chat-bubble-container {
     margin-top: auto;
-    margin-bottom: 0.2rem;
   }
-
 }
 
 .chat-bubble-container {
@@ -91,7 +89,7 @@
   padding: 0.4rem 0.5rem;
   border-radius: 0.5rem;
   width: fit-content;
-  margin: 0.2rem 1rem;
+  margin: 0.5rem 2rem;
 }
 
 .chat-time {
@@ -117,3 +115,22 @@
     outline: none;
   }
 }
+
+.spinner-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5em 0;
+
+  margin: auto;
+  mat-spinner {
+    zoom: 0.2;
+  }
+
+  .spinner::ng-deep circle {
+    stroke: gray;
+    zoom: 0.2
+  }
+}
+

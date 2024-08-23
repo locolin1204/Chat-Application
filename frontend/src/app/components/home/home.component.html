@@ -44,25 +44,22 @@
                 <div class="selected-chat-title">{{ selectedChat.chatName }}</div>
             </div>
 
-            <div class="chat-area">
-                <div *ngIf="messages.length != 0">
+            <div class="chat-area" #chatScroll (scroll)="onScrollFetchMessage($event)">
                     <ng-container *ngIf="user$ | async as curUser">
-                        <div appIntersectionObserver (inView)="fetchMoreMessages()" style="visibility: hidden;">Fetching...</div>
+                        <div *ngIf="isLoading" class="spinner-container">
+                            <mat-spinner class="spinner"></mat-spinner>
+                        </div>
                         <div *ngFor="let message of messages"
                              class="chat-bubble-container"
                              [ngClass]="{'sender': message.userId === curUser._id}"
                         >
                             <div class="chat-bubble">
                                 {{ message?.text }}
-                                <span class="chat-time">
-                                {{ message?.timestamp | date:'hh:mm a' }}
-                            </span>
+                                <span class="chat-time">{{ message?.timestamp | date:'hh:mm a' }}</span>
                             </div>
                         </div>
                         <div #endOfChat></div>
                     </ng-container>
-                </div>
-
             </div>
 
             <div class="input-area">
