@@ -56,8 +56,10 @@ export class HomeComponent {
                     const chatItem = chatItems.find(chatItem => chatItem.chat._id === (value?.[0] ?? "")) || null;
                     this.hasMore = true;
                     this.messages = []
-                    this.connectAndSubscribeSocket()
-                    this.fetchMessage(true)
+                    if (chatItem){
+                        this.connectAndSubscribeSocket()
+                        this.fetchMessage(true)
+                    }
                     return chatItem
                 })
             )
@@ -65,6 +67,7 @@ export class HomeComponent {
     );
 
     selectChatUser(curUser: User) {
+        this.messages = []
         this.user$ = this.userService.getCurrentUser(curUser._id)
         this.chatItemList$ = this.chatService.getAllChats()
         this.users$ = combineLatest(
@@ -75,7 +78,7 @@ export class HomeComponent {
                         return u.username?.toLowerCase().includes(searchString ?? "".toLowerCase()) && u._id !== user?._id;
                     }))
             )
-        this.messages = []
+        this.chatListControl.setValue(null)
     }
 
     createChat(receiver: User) {
@@ -102,46 +105,45 @@ export class HomeComponent {
     }
 
     connectAndSubscribeSocket() {
-        if (this.selectedChatItem$) {
-            this.disconnectWebSocket()
-            const websocketSubject = this.messageService.initSocket(this.chatListControl.value[0]);
-            console.log("connection is ", websocketSubject)
-            websocketSubject.subscribe({
-                next: connection => connection.subscribe({
-                    next: message => {
-                        this.messages.push(message as Message)
-                        this.chatItemList$ = this.chatItemList$.pipe(
-                            map(chatItemList => {
-                                    return chatItemList.map(chatItem => {
-                                        if (chatItem.chat._id === this.chatListControl.value[0]) {
-                                            const chat: Chat = {
-                                                _id: chatItem.chat._id,
-                                                lastMessage: message.text,
-                                                lastMessageDate: new Date(Date.now()),
-                                                userIds: chatItem.chat.userIds
-                                            }
-
-                                            return <ChatItem>({
-                                                senderId: chatItem.senderId,
-                                                chat: chat,
-                                                chatName: chatItem.chatName,
-                                            })
+        this.disconnectWebSocket()
+        const websocketSubject = this.messageService.initSocket(this.chatListControl.value[0]);
+        console.log("connection is ", websocketSubject)
+        websocketSubject.subscribe({
+            next: connection => connection.subscribe({
+                next: message => {
+                    this.messages.push(message as Message)
+                    this.chatItemList$ = this.chatItemList$.pipe(
+                        map(chatItemList => {
+                                return chatItemList.map(chatItem => {
+                                    if (chatItem.chat._id === this.chatListControl.value[0]) {
+                                        const chat: Chat = {
+                                            _id: chatItem.chat._id,
+                                            lastMessage: message.text,
+                                            lastMessageDate: new Date(Date.now()),
+                                            userIds: chatItem.chat.userIds
                                         }
-                                        return chatItem
-                                    })
-                                }
-                            )
-                        )
 
-                        console.log("message received ", message)
-                        this.scrollToBottom()
-                    },
-                    error: error => console.log(error),
-                    complete: () => console.log("connection completed")
-                }),
-                error: err => console.error(err)
-            })
-        }
+                                        return <ChatItem>({
+                                            senderId: chatItem.senderId,
+                                            chat: chat,
+                                            chatName: chatItem.chatName,
+                                        })
+                                    }
+                                    return chatItem
+                                })
+                            }
+                        )
+                    )
+
+                    console.log("message received ", message)
+                    this.scrollToBottom()
+                },
+                error: error => console.log(error),
+                complete: () => console.log("connection completed")
+            }),
+            error: err => console.error(err)
+        })
+
     }
 
     disconnectWebSocket() {
